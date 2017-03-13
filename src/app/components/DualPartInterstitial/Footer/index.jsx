@@ -7,11 +7,10 @@ import url from 'url';
 
 import { redirect } from 'platform/actions';
 import * as xpromoActions from 'app/actions/xpromo';
-import { XPROMO_DISMISS } from 'lib/eventUtils';
 import getSubreddit from 'lib/getSubredditFromState';
 import { getXPromoLinkforCurrentPage } from 'lib/smartBannerState';
-import {
-  loginRequiredEnabled as requireXPromoLogin,
+import { 
+  loginRequiredEnabled as requireXPromoLogin, 
 } from 'app/selectors/xpromo';
 
 const List = () => {
@@ -42,12 +41,19 @@ class DualPartInterstitialFooter extends React.Component {
   }
 
   onClose = () => {
-    const { dispatch, requireLogin } = this.props;
+    const { 
+      dispatch, 
+      requireLogin, 
+      persistXPromoState, 
+    } = this.props;
+
     if (requireLogin) {
       dispatch(redirect(this.loginLink()));
     } else {
-      dispatch(xpromoActions.trackXPromoEvent(XPROMO_DISMISS, { dismiss_type: 'link' }));
-      dispatch(xpromoActions.close());
+      if (!persistXPromoState) {
+        dispatch(xpromoActions.close());
+      }
+      dispatch(xpromoActions.promoDismissed('link'));
     }
   }
 
