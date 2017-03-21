@@ -117,7 +117,7 @@ class DualPartInterstitialFooter extends React.Component {
 }
 
 const selector = createStructuredSelector({
-  subredditName: getSubreddit,
+  subredditName: state => getSubreddit(state),
   requireLogin: requireXPromoLogin,
   nativeInterstitialLink: state => getXPromoLinkforCurrentPage(state, 'interstitial'),
   nativeLoginLink: state => getXPromoLinkforCurrentPage(state, 'login'),
