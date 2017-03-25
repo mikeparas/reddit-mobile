@@ -101,6 +101,15 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
       navigateToUrl(`/user/${userName}/${commentsOrSubmitted}`, {
         queryParams: { ...queryParams, sort },
       });
+  } else if (/\/search$/.test(url)) {
+    onSortChange = sort => {
+      if (sort === SORTS.HOT || sort === SORTS.NEW) {
+        delete queryParams.t;
+      }
+      navigateToUrl(url, {
+        queryParams: { ...queryParams, sort },
+      });
+    };
   } else {
     onSortChange = sort => {
       const { subredditName } = urlParams;
