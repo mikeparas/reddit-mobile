@@ -103,6 +103,7 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
       });
   } else if (/\/search$/.test(url)) {
     onSortChange = sort => {
+      // remove time filter if "hot" or "new"
       if (sort === SORTS.HOT || sort === SORTS.NEW) {
         delete queryParams.t;
       }
