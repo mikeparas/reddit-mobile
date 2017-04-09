@@ -3,7 +3,10 @@ import omitBy from 'lodash/omitBy';
 import isNull from 'lodash/isNull';
 import sha1 from 'crypto-js/sha1';
 import url from 'url';
-import { flags as flagConstants } from 'app/constants';
+import {
+  flags as flagConstants,
+  rulesModalExperimentSubreddits,
+} from 'app/constants';
 import getSubreddit from 'lib/getSubredditFromState';
 import getRouteMetaFromState from 'lib/getRouteMetaFromState';
 import getContentId from 'lib/getContentIdFromState';
@@ -32,6 +35,10 @@ const {
   VARIANT_TITLE_EXPANDO,
   VARIANT_MIXED_VIEW,
   SHOW_AMP_LINK,
+  RULES_MODAL_ON_SUBMIT_CLICK_ANYWHERE,
+  RULES_MODAL_ON_SUBMIT_CLICK_BUTTON,
+  RULES_MODAL_ON_COMMENT_CLICK_ANYWHERE,
+  RULES_MODAL_ON_COMMENT_CLICK_BUTTON,
 
   // Xpromo ----------------------------------------------------------------------
   // Login Required
@@ -347,6 +354,54 @@ const config = {
       percentage: 2,
     },
   },
+  [RULES_MODAL_ON_SUBMIT_CLICK_ANYWHERE]: {
+    and: [
+      { allowedPages: ['submit'] },
+      { subreddits: rulesModalExperimentSubreddits },
+      { loggedin: true },
+      { isMod: false },
+      { or: [
+        { url: 'rulesmodalonsubmitclickanywhere' },
+        { variant: 'mweb_rules_modal_on_submit:click_anywhere' },
+      ] },
+    ],
+  },
+  [RULES_MODAL_ON_SUBMIT_CLICK_BUTTON]: {
+    and: [
+      { allowedPages: ['submit'] },
+      { loggedin: true },
+      { isMod: false },
+      { subreddits: rulesModalExperimentSubreddits },
+      { or: [
+        { url: 'rulesmodalonsubmitclickbutton' },
+        { variant: 'mweb_rules_modal_on_submit:click_button' },
+      ] },
+    ],
+  },
+  [RULES_MODAL_ON_COMMENT_CLICK_ANYWHERE]: {
+    and: [
+      { allowedPages: ['comments'] },
+      { loggedin: true },
+      { isMod: false },
+      { subreddits: rulesModalExperimentSubreddits },
+      { or: [
+        { url: 'rulesmodaloncommentclickanywhere' },
+        { variant: 'mweb_rules_modal_on_comment:click_anywhere' },
+      ] },
+    ],
+  },
+  [RULES_MODAL_ON_COMMENT_CLICK_BUTTON]: {
+    and: [
+      { allowedPages: ['comments'] },
+      { loggedin: true },
+      { isMod: false },
+      { subreddits: rulesModalExperimentSubreddits },
+      { or: [
+        { url: 'rulesmodaloncommentclickbutton' },
+        { variant: 'mweb_rules_modal_on_comment:click_button' },
+      ] },
+    ],
+  },
 };
 
 const flags = new Flags(config);
@@ -393,6 +448,26 @@ flags.addRule('subreddit', function (name) {
   }
 
   return subreddit.toLowerCase() === name.toLowerCase();
+});
+
+flags.addRule('subreddits', function (subredditNames) {
+  const subreddit = getSubreddit(this.state);
+  if (!subreddit) {
+    return false;
+  }
+
+  return subredditNames.map(n => n.toLowerCase()).includes(subreddit.toLowerCase());
+});
+
+flags.addRule('isMod', function(val) {
+  let userIsMod = false;
+  const subreddit = getSubreddit(this.state);
+  const moderatingSubreddits = this.state.moderatingSubreddits;
+  if (subreddit && moderatingSubreddits && moderatingSubreddits.names) {
+    const names = moderatingSubreddits.names.map(n => n.toLowerCase());
+    userIsMod = names.includes(subreddit.toLowerCase());
+  }
+  return userIsMod === val;
 });
 
 const firstBuckets = new Set();
@@ -572,7 +647,7 @@ export const isNSFWPage = state => {
   }
 
   if (subredditName) {
-    const subreddit = state.subreddits[subredditName];
+    const subreddit = state.subreddits[subredditName.toLowerCase()];
     if (subreddit && subreddit.over18) {
       return true;
     }

@@ -97,8 +97,9 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
   let onSortChange;
 
   if (userName) {
-    onSortChange = sort =>
-      navigateToUrl(`/user/${userName}/${commentsOrSubmitted}`, {
+    onSortChange = sort => {
+      const path = commentsOrSubmitted || '';
+      navigateToUrl(`/user/${userName}/${path}`, {
         queryParams: { ...queryParams, sort },
       });
   } else if (/\/search$/.test(url)) {
