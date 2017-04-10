@@ -102,7 +102,7 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
       navigateToUrl(`/user/${userName}/${path}`, {
         queryParams: { ...queryParams, sort },
       });
-    }
+    };
   } else if (/\/search$/.test(url)) {
     onSortChange = sort => {
       // remove time filter if "hot" or "new"
